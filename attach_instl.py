@@ -10,6 +10,11 @@ ATTACH_STATUS = Gauge('attach_status', 'Secure Mobile Connect Attach status')
 attach_status = 0
 
 
+def do_detach():
+    result = subprocess.run(('sudo poff'))
+    print(result)
+
+
 def do_attach():
     result = subprocess.run(('sudo pon'))
     print(result)
@@ -18,6 +23,7 @@ def do_attach():
 def attach_app(environ, start_fn):
     global attach_status
     if environ['PATH_INFO'] == '/metrics':
+        do_detach()
         do_attach()
         attach_status = not attach_status
         ATTACH_STATUS.set(attach_status)
