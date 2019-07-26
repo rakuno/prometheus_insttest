@@ -11,21 +11,25 @@ attach_status = 0
 
 
 def do_detach():
-    result = subprocess.run(('sudo poff'))
+    result = subprocess.run(['poff'])
     print(result)
 
 
 def do_attach():
-    result = subprocess.run(('sudo pon'))
+    result = subprocess.run(['pon'])
     print(result)
+    return result.returncode
 
 
 def attach_app(environ, start_fn):
     global attach_status
     if environ['PATH_INFO'] == '/metrics':
         do_detach()
-        do_attach()
-        attach_status = not attach_status
+        result = do_attach()
+        if result == 0:
+            attach_status = 1
+        else:
+            attach_status = 0
         ATTACH_STATUS.set(attach_status)
         return metrics_app(environ, start_fn)
     start_fn('200 OK', [])
