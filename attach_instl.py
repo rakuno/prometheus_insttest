@@ -8,19 +8,16 @@ ATTACH_STATUS = Gauge('attach_status', 'Secure Mobile Connect Attach status')
 attach_status = 0
 
 
-class AttachMonitor:
-    def __init__(self):
-        self.attach_status = 0
-
-    def attach_app(self, environ, start_fn):
-        if environ['PATH_INFO'] == '/metrics':
-            self.attach_status = not self.attach_status
-            ATTACH_STATUS.set(self.attach_status)
-            return metrics_app(environ, start_fn)
-        start_fn('200 OK', [])
-        return [b'Hello Prometheus']
+def attach_app(environ, start_fn):
+    global attach_status
+    if environ['PATH_INFO'] == '/metrics':
+        attach_status = not attach_status
+        ATTACH_STATUS.set(attach_status)
+        return metrics_app(environ, start_fn)
+    start_fn('200 OK', [])
+    return [b'Hello Prometheus']
 
 
 if __name__ == '__main__':
-    httpd = make_server('', 8000, AttachMonitor.attach_app)
+    httpd = make_server('', 8000, attach_app)
     httpd.serve_forever()
