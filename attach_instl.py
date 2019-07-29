@@ -1,5 +1,7 @@
 import subprocess
+import time
 
+from cellulariot import cellulariot
 from prometheus_client import make_wsgi_app
 from prometheus_client import Gauge
 from wsgiref.simple_server import make_server
@@ -17,7 +19,7 @@ def do_detach():
 
 def do_attach():
     result = subprocess.run(['pon'])
-    print(result)
+    print(result.returncode)
     return result.returncode
 
 
@@ -36,6 +38,18 @@ def attach_app(environ, start_fn):
     return [b'Hello Prometheus']
 
 
+def init_cellulariot():
+    node = cellulariot.CellularIoT()  # for Sixfab CellularIoT HAT
+    node.setupGPIO()
+
+    node.disable()
+    time.sleep(1)
+    node.enable()
+    time.sleep(1)
+    node.powerUp()
+
+
 if __name__ == '__main__':
+    init_cellulariot()
     httpd = make_server('', 8000, attach_app)
     httpd.serve_forever()
